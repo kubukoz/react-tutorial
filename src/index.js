@@ -26,16 +26,8 @@ class Board extends React.Component {
   }
 
   render() {
-    const winner = calculateWinner(this.props.squares)
-    const end = this.props.squares.indexOf(null) < 0;
-    const status =
-      winner ? ('Winner: ' + winner) :
-        end ? 'Result: draw' :
-          ('Next player: ' + (this.props.xIsNext ? 'X' : 'O'));
-
     return (
       <div>
-        <div className="status">{status}</div>
         <div className="board-row">
           {this.renderSquare(0)}
           {this.renderSquare(1)}
@@ -61,34 +53,52 @@ class Game extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      squares: Array(9).fill(null),
+      history: [{
+        squares: Array(9).fill(null)
+      }],
       xIsNext: true
     }
   }
 
   handleClick(i) {
-    const newSquares = this.state.squares.slice()
+    const squares = this.latestSquares()
+
+    const newSquares = squares.slice()
     if (calculateWinner(newSquares) || newSquares[i]) return;
     newSquares[i] = this.state.xIsNext ? 'X' : 'O'
 
     this.setState({
-      squares: newSquares,
+      history: this.state.history.concat({ squares: newSquares }),
       xIsNext: !this.state.xIsNext
     })
   }
 
+  latestSquares() {
+    return this.state.history[this.state.history.length - 1].squares;
+  }
+
   render() {
+    const squares = this.latestSquares()
+
+    const winner = calculateWinner(squares)
+    const end = squares.indexOf(null) < 0;
+
+    const status =
+      winner ? ('Winner: ' + winner) :
+        end ? 'Result: draw' :
+          ('Next player: ' + (this.state.xIsNext ? 'X' : 'O'));
+
     return (
       <div className="game">
         <div className="game-board">
           <Board
-            squares={this.state.squares}
+            squares={squares}
             xIsNext={this.state.xIsNext}
             handleClick={(i) => this.handleClick(i)}
           />
         </div>
         <div className="game-info">
-          <div>{/* status */}</div>
+          <div>{status}</div>
           <ol>{/* TODO */}</ol>
         </div>
       </div>
