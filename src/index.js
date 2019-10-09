@@ -14,43 +14,24 @@ function Square(props) {
 }
 
 class Board extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      squares: Array(9).fill(null),
-      xIsNext: true
-    }
-  }
-
-  handleClick(i) {
-    const newSquares = this.state.squares.slice()
-    if (calculateWinner(newSquares) || newSquares[i]) return;
-    newSquares[i] = this.state.xIsNext ? 'X' : 'O'
-
-    this.setState({
-      squares: newSquares,
-      xIsNext: !this.state.xIsNext
-    })
-  }
-
   renderSquare(i) {
-    const onClick = () => this.handleClick(i)
+    const onClick = () => this.props.handleClick(i)
 
     return (
       <Square
-        value={this.state.squares[i]}
+        value={this.props.squares[i]}
         onClick={onClick}
       />
     );
   }
 
   render() {
-    const winner = calculateWinner(this.state.squares)
-    const end = this.state.squares.indexOf(null) < 0;
+    const winner = calculateWinner(this.props.squares)
+    const end = this.props.squares.indexOf(null) < 0;
     const status =
       winner ? ('Winner: ' + winner) :
         end ? 'Result: draw' :
-          ('Next player: ' + (this.state.xIsNext ? 'X' : 'O'));
+          ('Next player: ' + (this.props.xIsNext ? 'X' : 'O'));
 
     return (
       <div>
@@ -76,11 +57,35 @@ class Board extends React.Component {
 }
 
 class Game extends React.Component {
+
+  constructor(props) {
+    super(props);
+    this.state = {
+      squares: Array(9).fill(null),
+      xIsNext: true
+    }
+  }
+
+  handleClick(i) {
+    const newSquares = this.state.squares.slice()
+    if (calculateWinner(newSquares) || newSquares[i]) return;
+    newSquares[i] = this.state.xIsNext ? 'X' : 'O'
+
+    this.setState({
+      squares: newSquares,
+      xIsNext: !this.state.xIsNext
+    })
+  }
+
   render() {
     return (
       <div className="game">
         <div className="game-board">
-          <Board />
+          <Board
+            squares={this.state.squares}
+            xIsNext={this.state.xIsNext}
+            handleClick={(i) => this.handleClick(i)}
+          />
         </div>
         <div className="game-info">
           <div>{/* status */}</div>
