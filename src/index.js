@@ -56,40 +56,64 @@ class Game extends React.Component {
       history: [{
         squares: Array(9).fill(null)
       }],
+      stepNumber: 0,
       xIsNext: true
     }
   }
 
   handleClick(i) {
-    const squares = this.latestSquares()
+    const history = this.state.history.slice(0, this.state.stepNumber + 1)
+    const squares = this.latestSquares(history)
 
     const newSquares = squares.slice()
     if (calculateWinner(newSquares) || newSquares[i]) return;
     newSquares[i] = this.state.xIsNext ? 'X' : 'O'
 
     this.setState({
-      history: this.state.history.concat({ squares: newSquares }),
-      xIsNext: !this.state.xIsNext
+      history: history.concat({ squares: newSquares }),
+      xIsNext: !this.state.xIsNext,
+      stepNumber: history.length
     })
   }
 
-  latestSquares() {
-    return this.state.history[this.state.history.length - 1].squares;
+  latestSquares(history) {
+    return history[history.length - 1].squares;
+  }
+
+  jumpTo(step) {
+    this.setState({
+      stepNumber: step,
+      xIsNext: (step % 2) === 0
+    })
   }
 
   render() {
-    const squares = this.latestSquares()
+    const squares = this.latestSquares(this.state.history.slice(0, this.state.stepNumber + 1))
 
     const winner = calculateWinner(squares)
-    const end = squares.indexOf(null) < 0;
+    const draw = squares.indexOf(null) < 0;
+
+    const moves = this.state.history.map((step, i) => {
+      const desc = i > 0 ?
+        'Go to move #' + i :
+        'Go to game start'
+
+      const descContent = this.state.stepNumber === i ? (<b>{desc}</b>) : desc
+
+      return (
+        <li key={i} >
+          <button onClick={() => this.jumpTo(i)} disabled={i === this.state.stepNumber}>{descContent}</button>
+        </li>
+      )
+    })
 
     const status =
       winner ? ('Winner: ' + winner) :
-        end ? 'Result: draw' :
+        draw ? 'Result: draw' :
           ('Next player: ' + (this.state.xIsNext ? 'X' : 'O'));
 
     return (
-      <div className="game">
+      <div className="game" >
         <div className="game-board">
           <Board
             squares={squares}
@@ -99,7 +123,7 @@ class Game extends React.Component {
         </div>
         <div className="game-info">
           <div>{status}</div>
-          <ol>{/* TODO */}</ol>
+          <ol>{moves}</ol>
         </div>
       </div>
     );
